@@ -1,0 +1,122 @@
+#!/usr/bin/env python
+import pymail
+import argparse, configparser, os, sys
+from xdg import BaseDirectory
+
+__app__ = os.path.basename(sys.argv[0])
+
+class ConfigError(LookupError):
+    def __init__(self, message, filename=None, section=None, value=None):
+        super().__init__(message)
+
+        self.filename = filename
+        self.section = section
+        self.value = value
+
+try:
+    argumentParser = argparse.ArgumentParser(usage="%(prog)s [-a HEADER] [-b BCC_ADDR] [-c CC_ADDR] [-s SUBJECT] TO_ADDR...", add_help=False,
+        description="pymail is a simple Python script to synchroniously send emails via SMTP.  " +
+        "It is often used on satellite systems without a fully-featured MTA.")
+    argumentParser.epilog = ("Please report bugs using GitHub at <https://github.com/PhrozenByte/pymail>.  " +
+        "Besides, you will find general help and information about cron-notify there.")
+
+    argumentGroup = argumentParser.add_argument_group("Arguments")
+    argumentGroup.add_argument("to", nargs="*", metavar="TO_ADDR",
+        help="Send mail to TO_ADDR.")
+
+    applicationOptions = argumentParser.add_argument_group("Application options")
+    applicationOptions.add_argument("-a", dest="headers", action="append", metavar="HEADER",
+        help="Specify additional header fields on the command line such as \"X-Loop: foo@bar\" etc.  You have to " +
+            "use quotes if the string contains spaces.  This argument may be specified more than once, the headers " +
+            "will then be concatenated.")
+    applicationOptions.add_argument("-b", dest="bcc", metavar="BCC_ADDR",
+        help="Send blind carbon copies to BCC_ADDR.")
+    applicationOptions.add_argument("-c", dest="cc", metavar="CC_ADDR",
+        help="Send carbon copies to list of users.  CC_ADDR should be a comma separated list of names.")
+    applicationOptions.add_argument("-s", dest="subject", metavar="SUBJECT",
+        help="Specify subject on command line (only the first argument after the -s flag is used as a subject; " +
+            "be careful to quote subjects containing spaces).")
+
+    helpOptions = argumentParser.add_argument_group("Help options")
+    helpOptions.add_argument("--help", dest="help", action="store_true",
+        help="Display this help message and exit")
+    helpOptions.add_argument("--version", dest="version", action="store_true",
+        help="Output version information and exit")
+
+    args = argumentParser.parse_args()
+
+    if args.help:
+        argumentParser.print_help()
+        sys.exit(0)
+
+    if args.version:
+        print("pymail {}".format(pymail.__version__))
+        print("Copyright (C) 2017-2018 Daniel Rudolf")
+        print("")
+        print("License GPLv3: GNU GPL version 3 only <http://gnu.org/licenses/gpl.html>.")
+        print("This is free software: you are free to change and redistribute it.")
+        print("There is NO WARRANTY, to the extent permitted by law.")
+        print("")
+        print("Written by Daniel Rudolf <http://www.daniel-rudolf.de/>")
+        print("See also: <https://github.com/PhrozenByte/pynotify>")
+        sys.exit(0)
+
+    subject = args.subject
+    mailTo = args.to
+
+    headers = { "X-Mailer": "pymail/{}".format(pymail.__version__) }
+    if args.headers:
+        for header in args.headers:
+            key, value = header.split(":", 1)
+            headers[key] = value.strip()
+    if args.bcc:
+        headers["BCC"] = args.bcc.split(",")
+    if args.cc:
+        headers["CC"] = args.cc.split(",")
+
+    try:
+        configFile = None
+        for configPath in BaseDirectory.load_config_paths("pymail"):
+            if os.path.isfile(configPath + "/pymail.ini"):
+                configFile = configPath + "/pymail.ini"
+                break
+
+        if not configFile:
+            raise IOError(2, "No such file or directory", "pymail.ini")
+
+        configParser = configparser.RawConfigParser()
+        configParser.readfp(open(configFile))
+    except IOError as error:
+        sys.stderr.write("{}: unable to load config file: {}\n".format(__app__, str(error)))
+        sys.exit(1)
+
+    try:
+        configSection = os.environ.get("PYMAIL_CONFIG", "DEFAULT")
+        if configSection not in configParser:
+            raise ConfigError("No such section", section=configSection, filename=configFile)
+
+        host = configParser[configSection].get("host", None)
+        if not host:
+            raise ConfigError("No such value", section=configSection, value="host", filename=configFile)
+
+        port = configParser[configSection].get("port", None)
+        secure = configParser[configSection].get("secure", None)
+        username = configParser[configSection].get("username", None)
+        password = configParser[configSection].get("password", None)
+        mailFrom = configParser[configSection].get("from", None)
+    except ValueError as error:
+        if error.value:
+            sys.stderr.write("{}: invalid config value {!r} in section {!r}: {}".format(__app__, error.section, error.value, str(error)))
+        elif error.section:
+            sys.stderr.write("{}: invalid config section {!r}: {}".format(__app__, error.section, str(error)))
+        else:
+            sys.stderr.write("{}: invalid config file: {}".format(__app__, str(error)))
+        sys.exit(1)
+
+    body = sys.stdin.read()
+
+    with pymail.PyMail(host=host, port=port, secure=secure, username=username, password=password) as mail:
+        message = mail.message(body=body, subject=subject, mailFrom=mailFrom, mailTo=mailTo, headers=headers)
+        mail.send(message)
+except KeyboardInterrupt:
+    sys.exit(130)
