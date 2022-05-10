@@ -1,4 +1,27 @@
 #!/usr/bin/env python
+"""
+pymail
+
+pymail is a simple Python script to synchronously send emails via SMTP.
+It is often used on satellite systems without a fully-featured MTA.
+
+Copyright (C) 2017-2022  Daniel Rudolf <https://www.daniel-rudolf.de>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, version 3 of the License only.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+SPDX-License-Identifier: GPL-3.0-only
+"""
+
 import pymail
 import argparse, configparser, os, sys
 from xdg import BaseDirectory
@@ -51,7 +74,7 @@ try:
 
     if args.version:
         print("pymail {}".format(pymail.__version__))
-        print("Copyright (C) 2017-2018 Daniel Rudolf")
+        print("Copyright (C) 2017-2022 Daniel Rudolf")
         print("")
         print("License GPLv3: GNU GPL version 3 only <http://gnu.org/licenses/gpl.html>.")
         print("This is free software: you are free to change and redistribute it.")
