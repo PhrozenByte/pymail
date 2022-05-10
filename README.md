@@ -1,7 +1,7 @@
 `pymail`
 ========
 
-`pymail` is a simple Python script to synchroniously send emails via SMTP. It is often used on satellite systems without a fully-featured MTA.
+`pymail` is a simple Python script to synchronously send emails via SMTP. It is often used on satellite systems without a fully-featured MTA.
 
 Requires Python 3.4+
 
@@ -11,7 +11,7 @@ Usage
 ```
 usage: pymail [-a HEADER] [-b BCC_ADDR] [-c CC_ADDR] [-s SUBJECT] TO_ADDR...
 
-pymail is a simple Python script to synchroniously send emails via SMTP. It is
+pymail is a simple Python script to synchronously send emails via SMTP. It is
 often used on satellite systems without a fully-featured MTA.
 
 Arguments:
@@ -34,7 +34,7 @@ Help options:
   --version    Output version information and exit
 
 Please report bugs using GitHub at <https://github.com/PhrozenByte/pymail>.
-Besides, you will find general help and information about cron-notify there.
+Besides, you will find general help and information about pymail there.
 ```
 
 Config

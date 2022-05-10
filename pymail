@@ -38,10 +38,10 @@ class ConfigError(LookupError):
 
 try:
     argumentParser = argparse.ArgumentParser(usage="%(prog)s [-a HEADER] [-b BCC_ADDR] [-c CC_ADDR] [-s SUBJECT] TO_ADDR...", add_help=False,
-        description="pymail is a simple Python script to synchroniously send emails via SMTP.  " +
+        description="pymail is a simple Python script to synchronously send emails via SMTP.  " +
         "It is often used on satellite systems without a fully-featured MTA.")
     argumentParser.epilog = ("Please report bugs using GitHub at <https://github.com/PhrozenByte/pymail>.  " +
-        "Besides, you will find general help and information about cron-notify there.")
+        "Besides, you will find general help and information about pymail there.")
 
     argumentGroup = argumentParser.add_argument_group("Arguments")
     argumentGroup.add_argument("to", nargs="*", metavar="TO_ADDR",
@@ -81,7 +81,7 @@ try:
         print("There is NO WARRANTY, to the extent permitted by law.")
         print("")
         print("Written by Daniel Rudolf <http://www.daniel-rudolf.de/>")
-        print("See also: <https://github.com/PhrozenByte/pynotify>")
+        print("See also: <https://github.com/PhrozenByte/pymail>")
         sys.exit(0)
 
     subject = args.subject
@@ -127,7 +127,7 @@ try:
         username = configParser[configSection].get("username", None)
         password = configParser[configSection].get("password", None)
         mailFrom = configParser[configSection].get("from", None)
-    except ValueError as error:
+    except ConfigError as error:
         if error.value:
             sys.stderr.write("{}: invalid config value {!r} in section {!r}: {}".format(__app__, error.section, error.value, str(error)))
         elif error.section:

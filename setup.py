@@ -32,7 +32,7 @@ with open("LICENSE") as f:
 setup(
     name="pymail",
     version="0.0.1",
-    description="Simple Python script to synchroniously send emails via SMTP. " +
+    description="Simple Python script to synchronously send emails via SMTP. " +
         "It is often used on satellite systems without a fully-featured MTA.",
     long_description=readme,
     author="Daniel Rudolf",
